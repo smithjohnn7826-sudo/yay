@@ -1,0 +1,46 @@
+name: High-Resource SSHX Session (32 Cores / 64GB RAM)
+
+# Define triggers for the workflow
+on:
+  # This schedule ensures a new session attempts to start every 5.5 hours (30 min buffer before 6-hour limit)
+  schedule:
+    - cron: '30 */5 * * *'
+  # Allows manual running from the 'Actions' tab.
+  workflow_dispatch:
+
+jobs:
+  high_resource_sshx:
+    name: High-Core SSHX Session
+    
+    # 💥 CRITICAL: You MUST use a self-hosted runner with the required resources.
+    # Replace 'self-hosted' with the label you assigned to your machine (e.g., '32core-runner').
+    # GitHub does not allow requesting specific core/RAM counts on their hosted runners.
+    runs-on: [self-hosted, linux] 
+    
+    # NOTE: The GitHub platform will use the runner machine assigned to these labels.
+    # Ensure this machine has 32 Cores and 64 GB RAM.
+    
+    timeout-minutes: 360 # Maximum allowed job duration (6 hours)
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Start Max Duration SSHX Session
+        shell: bash
+        run: |
+          echo "=================================================================="
+          echo "Running on Self-Hosted Runner."
+          echo "Verify your runner machine has 32 cores and 64 GB RAM."
+          
+          # 1. Verification (optional, prints actual resources)
+          echo "Actual Cores Detected:" $(nproc)
+          echo "Actual Memory Detected:" $(free -h | awk '/^Mem:/ {print $2}')
+          
+          echo "Starting SSHX session. Check the logs for the live connection URL."
+          echo "=================================================================="
+          
+          # The command to install and start the sshx session
+          curl -sSf https://sshx.io/get | sh -s run
+          
+          # NOTE: The job will block here until the session is closed, or the 6-hour limit is reached.
