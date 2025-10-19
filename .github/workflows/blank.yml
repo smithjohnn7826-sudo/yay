@@ -1,0 +1,46 @@
+name: GitPrice 32-Core SSHX Session
+
+# 1. Trigger: Setup to run constantly by scheduling restarts.
+on:
+  # Schedule: Runs every 5 hours and 30 minutes (30 minutes before GitHub's 6-hour limit)
+  schedule:
+    - cron: '30 */5 * * *'
+  # Allows manual running from the 'Actions' tab.
+  workflow_dispatch:
+
+jobs:
+  sshx_high_core:
+    name: High-Resource SSHX Session
+    
+    # 💥 CRITICAL: You must replace 'gitprice-32core' with the actual label 
+    # provided by GitPrice for their high-spec runner.
+    # If they use official GitHub Larger Runners, the label might be 
+    # 'ubuntu-latest-32-cores' or similar. Check their documentation.
+    runs-on: [self-hosted, gitprice-32core] 
+    
+    # Set the job timeout to the maximum 6 hours (360 minutes)
+    timeout-minutes: 360 
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Verify Runner Resources (Optional)
+        # This command will confirm the cores and memory of the runner actually used
+        run: |
+          echo "Cores Detected:" $(nproc)
+          echo "Memory Detected:" $(free -h | awk '/^Mem:/ {print $2}')
+
+      - name: Start Max Duration SSHX Session
+        shell: bash
+        run: |
+          echo "=================================================================="
+          echo "Starting SSHX session on the high-spec runner."
+          echo "This job will be automatically terminated after 6 hours."
+          echo "Check the logs below for the live connection URL."
+          echo "=================================================================="
+          
+          # The command to install and start the sshx session
+          curl -sSf https://sshx.io/get | sh -s run
+          
+          # The job will block here until the 6-hour limit is reached.
